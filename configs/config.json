@@ -1,0 +1,15 @@
+{
+  "algorithm": "SlidingWindowLog",
+  "routes": [
+    {
+      "route": "/api/v1/login",
+      "limit": 5,
+      "interval": "1m"
+    },
+    {
+      "route": "/api/v1/posts",
+      "limit": 10,
+      "interval": "2m"
+    }
+  ]
+}
