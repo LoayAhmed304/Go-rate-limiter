@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/LoayAhmed304/GO-rate-limiter/pkg/logger"
+)
 
 func main() {
-	fmt.Println("Hello world")
+	logger.Init()
+	logger.LogInfo("Hello world")
 }
