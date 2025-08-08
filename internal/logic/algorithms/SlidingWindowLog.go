@@ -2,12 +2,13 @@ package algorithms
 
 import (
 	"time"
+
+	"github.com/LoayAhmed304/GO-rate-limiter/internal/configs"
+	"github.com/LoayAhmed304/GO-rate-limiter/internal/logic/algorithms/structures"
 )
 
-// assume it's 5 requests per 10 seconds for now
-// project structure will be adjusted to support given configs for each algorithm
-var maxRequests int = 5
-var windowSize int = 10 // 10 seconds
+var windowSize time.Duration
+var maxRequests int
 
 // AllowRequest determines whether a request may be allowed for a client,
 // based on the Sliding Window Log algorithm.
@@ -15,7 +16,23 @@ var windowSize int = 10 // 10 seconds
 // It takes a slice of timestamps representing the previous requests from the client,
 // and returns whether the current request is allowed.
 // If not allowed, it alos returns the time remaining until the next allowed request.
-func AllowRequest(clientLogs *[]time.Time) (bool, time.Duration) {
+func AllowRequest(clientIP, route string) (bool, time.Duration) {
+	// route is not assigned in configs, so we assume it is whitelisted
+	if (*structures.ClientsLogs)[route] == nil {
+		return true, 0
+	}
+
+	windowSize = configs.ConfigInstance.RoutesConfigs[route].Interval
+	maxRequests = configs.ConfigInstance.RoutesConfigs[route].Limit
+
+	_, exists := (*structures.ClientsLogs)[route][clientIP]
+	if !exists {
+		s := make([]time.Time, 0, maxRequests)
+		(*structures.ClientsLogs)[route][clientIP] = &s
+	}
+
+	clientLogs := (*structures.ClientsLogs)[route][clientIP]
+
 	if curRequests := len(*clientLogs); curRequests < maxRequests {
 		*clientLogs = append(*clientLogs, time.Now())
 
@@ -31,9 +48,8 @@ func AllowRequest(clientLogs *[]time.Time) (bool, time.Duration) {
 		return true, 0
 	}
 
-	windowStartTime := time.Now().Add(time.Duration(-windowSize) * time.Second)
-	firstRequestTime := (*clientLogs)[0]
-	remainingTime := firstRequestTime.Sub(windowStartTime)
+	remainingTime := calcRemainingTime(clientLogs)
+
 	return false, remainingTime
 }
 
@@ -46,7 +62,7 @@ func clearLogs(clientLogs *[]time.Time) {
 		return
 	}
 
-	curWindowStart := time.Now().Add(time.Duration(-windowSize) * time.Second)
+	curWindowStart := time.Now().Add(-windowSize)
 	curTimestamp := (*clientLogs)[0]
 	for len(*clientLogs) > 0 && curTimestamp.Before(curWindowStart) {
 		*clientLogs = (*clientLogs)[1:]
@@ -55,4 +71,16 @@ func clearLogs(clientLogs *[]time.Time) {
 			curTimestamp = (*clientLogs)[0]
 		}
 	}
+}
+
+func calcRemainingTime(clientLogs *[]time.Time) time.Duration {
+	if len(*clientLogs) == 0 {
+		return 0
+	}
+
+	windowStartTime := time.Now().Add(-windowSize)
+	firstRequestTime := (*clientLogs)[0]
+	remainingTime := firstRequestTime.Sub(windowStartTime)
+
+	return remainingTime
 }

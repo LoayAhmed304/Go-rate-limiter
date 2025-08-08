@@ -7,12 +7,14 @@ import (
 	"path"
 	"time"
 
+	"github.com/LoayAhmed304/GO-rate-limiter/internal/logic/algorithms/structures"
 	"github.com/LoayAhmed304/GO-rate-limiter/pkg/logger"
 )
 
 type RouteConfig struct {
-	Limit    int           `json:"limit"`
-	Interval time.Duration `json:"interval"`
+	Limit      int                    `json:"limit"`
+	Interval   time.Duration          `json:"interval"`
+	ClientLogs map[string][]time.Time // map to hold client logs for each route
 }
 
 type Config struct {
@@ -58,6 +60,9 @@ func ParseConfig(fileName string) error {
 		return err
 	}
 
+	routes := getMapKeys(ConfigInstance.RoutesConfigs)
+	structures.InitClientsLogs(routes)
+
 	logger.LogInfo("Configurations set up successfully")
 	return nil
 }
@@ -82,4 +87,14 @@ func convertRawConfig(raw *rawConfig) error {
 		}
 	}
 	return nil
+}
+
+func getMapKeys(m map[string]RouteConfig) []string {
+	keys := make([]string, 0, len(m))
+
+	for key := range m {
+		keys = append(keys, key)
+	}
+
+	return keys
 }
