@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/LoayAhmed304/GO-rate-limiter/internal/api"
-	"github.com/LoayAhmed304/GO-rate-limiter/internal/configs"
+	"github.com/LoayAhmed304/GO-rate-limiter/internal/logic/algorithms"
 	"github.com/LoayAhmed304/GO-rate-limiter/pkg/logger"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	logger.Init()
 
-	err := configs.ParseConfig(*fileName)
+	err := algorithms.InitConfigs(*fileName)
 	if err != nil {
 		logger.LogError("Failed to set up the configurations: " + err.Error())
 		os.Exit(1)

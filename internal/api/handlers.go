@@ -17,7 +17,7 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 
 	route := r.URL.Path
 
-	valid, timeLeft := algorithms.AllowRequest(clientIP, route)
+	valid, timeLeft := algorithms.ConfigInstance.Algorithm.AllowRequest(clientIP, route)
 
 	if valid {
 		w.WriteHeader(http.StatusOK)

@@ -2,13 +2,14 @@ package algorithms
 
 import (
 	"time"
-
-	"github.com/LoayAhmed304/GO-rate-limiter/internal/configs"
-	"github.com/LoayAhmed304/GO-rate-limiter/internal/logic/algorithms/structures"
 )
 
 var windowSize time.Duration
 var maxRequests int
+
+type SlidingWindowLog struct {
+	ClientsLogs *map[string]map[string]*[]time.Time
+}
 
 // AllowRequest determines whether a request may be allowed for a client,
 // based on the Sliding Window Log algorithm.
@@ -16,22 +17,22 @@ var maxRequests int
 // It takes a slice of timestamps representing the previous requests from the client,
 // and returns whether the current request is allowed.
 // If not allowed, it alos returns the time remaining until the next allowed request.
-func AllowRequest(clientIP, route string) (bool, time.Duration) {
+func (swl *SlidingWindowLog) AllowRequest(clientIP, route string) (bool, time.Duration) {
 	// route is not assigned in configs, so we assume it is whitelisted
-	if (*structures.ClientsLogs)[route] == nil {
+	if (*swl.ClientsLogs)[route] == nil {
 		return true, 0
 	}
 
-	windowSize = configs.ConfigInstance.RoutesConfigs[route].Interval
-	maxRequests = configs.ConfigInstance.RoutesConfigs[route].Limit
+	windowSize = ConfigInstance.RoutesConfigs[route].Interval
+	maxRequests = ConfigInstance.RoutesConfigs[route].Limit
 
-	_, exists := (*structures.ClientsLogs)[route][clientIP]
+	_, exists := (*swl.ClientsLogs)[route][clientIP]
 	if !exists {
 		s := make([]time.Time, 0, maxRequests)
-		(*structures.ClientsLogs)[route][clientIP] = &s
+		(*swl.ClientsLogs)[route][clientIP] = &s
 	}
 
-	clientLogs := (*structures.ClientsLogs)[route][clientIP]
+	clientLogs := (*swl.ClientsLogs)[route][clientIP]
 
 	if curRequests := len(*clientLogs); curRequests < maxRequests {
 		*clientLogs = append(*clientLogs, time.Now())
@@ -51,6 +52,16 @@ func AllowRequest(clientIP, route string) (bool, time.Duration) {
 	remainingTime := calcRemainingTime(clientLogs)
 
 	return false, remainingTime
+}
+
+func (swl *SlidingWindowLog) Init(routes []string) {
+	s := make(map[string]map[string]*[]time.Time)
+
+	for _, route := range routes {
+		s[route] = make(map[string]*[]time.Time)
+	}
+
+	swl.ClientsLogs = &s
 }
 
 // clearLogs is a private function used as a helper function for the AllowRequest
