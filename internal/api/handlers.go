@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/LoayAhmed304/GO-rate-limiter/internal/logic/algorithms"
+	"github.com/LoayAhmed304/GO-rate-limiter/pkg/logger"
 )
 
 func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
@@ -11,7 +12,12 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 
 	if clientIP == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Client IP not found"))
+
+		_, err := w.Write([]byte("Client IP not found"))
+		if err != nil {
+			logger.LogError("Failed to write response: " + err.Error())
+		}
+
 		return
 	}
 
@@ -21,10 +27,18 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Request allowed"))
+
+		_, err := w.Write([]byte("Request allowed"))
+		if err != nil {
+			logger.LogError("Failed to write response: " + err.Error())
+		}
 	} else {
 		w.WriteHeader(http.StatusTooManyRequests)
-		w.Write([]byte("Too many requests. Try again in " + timeLeft.String()))
+
+		_, err := w.Write([]byte("Too many requests. Try again in " + timeLeft.String()))
+		if err != nil {
+			logger.LogError("Failed to write response: " + err.Error())
+		}
 	}
 
 }

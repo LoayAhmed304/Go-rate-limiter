@@ -26,5 +26,9 @@ func main() {
 	mux := api.SetUpRoutes()
 	logger.LogInfo("Starting the server. Listening on port " + *port)
 
-	http.ListenAndServe(*port, mux)
+	err = http.ListenAndServe(*port, mux)
+	if err != nil {
+		logger.LogError("Failed to start the server: " + err.Error())
+		os.Exit(1)
+	}
 }
