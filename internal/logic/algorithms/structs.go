@@ -35,7 +35,15 @@ type Bucket struct {
 	lastRefill     time.Time
 }
 
-type Window struct {
+type SlidingWindow struct {
+	capacity        int
+	currentRequests int
+	windowSize      time.Duration
+	windowStart     time.Time
+	previousCount   int
+}
+
+type FixedWindow struct {
 	capacity        int
 	currentRequests int
 	windowSize      time.Duration

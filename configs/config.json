@@ -1,5 +1,5 @@
 {
-  "algorithm": "FixedWindowCounter",
+  "algorithm": "SlidingWindowCounter",
   "routes": [
     {
       "route": "/api/v1/login",

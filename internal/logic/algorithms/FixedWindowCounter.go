@@ -3,7 +3,7 @@ package algorithms
 import "time"
 
 type FixedWindowCounter struct {
-	clientsWindows *map[string]map[string]*Window
+	clientsWindows *map[string]map[string]*FixedWindow
 }
 
 // AllowRequest determines whether a request may be allowed for a client,
@@ -35,9 +35,9 @@ func (fwc *FixedWindowCounter) AllowRequest(clientKey, route string) (bool, time
 }
 
 func (fwc *FixedWindowCounter) Init(routes []string) {
-	s := make(map[string]map[string]*Window)
+	s := make(map[string]map[string]*FixedWindow)
 	for _, route := range routes {
-		s[route] = make(map[string]*Window)
+		s[route] = make(map[string]*FixedWindow)
 	}
 	fwc.clientsWindows = &s
 }
@@ -49,7 +49,7 @@ func (fwc *FixedWindowCounter) Init(routes []string) {
 func (fwc *FixedWindowCounter) setupWindows(clientKey, route string) {
 	_, exists := (*fwc.clientsWindows)[route][clientKey]
 	if !exists {
-		(*fwc.clientsWindows)[route][clientKey] = &Window{
+		(*fwc.clientsWindows)[route][clientKey] = &FixedWindow{
 			capacity:        ConfigInstance.RoutesConfigs[route].Limit,
 			currentRequests: 0,
 			windowSize:      ConfigInstance.RoutesConfigs[route].Interval,
@@ -59,7 +59,7 @@ func (fwc *FixedWindowCounter) setupWindows(clientKey, route string) {
 }
 
 // checkWindow checks if the current window has expired and resets the request count if it has.
-func (w *Window) checkWindow() {
+func (w *FixedWindow) checkWindow() {
 	if time.Since(w.windowStart) >= w.windowSize {
 		w.currentRequests = 0
 		w.windowStart = time.Now()
