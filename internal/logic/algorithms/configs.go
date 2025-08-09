@@ -84,6 +84,8 @@ func InitAlgorithm(algorithm string) {
 		ConfigInstance.Algorithm = &TokenBucket{}
 	case "SlidingWindowLog":
 		ConfigInstance.Algorithm = &SlidingWindowLog{}
+	case "FixedWindowCounter":
+		ConfigInstance.Algorithm = &FixedWindowCounter{}
 	default:
 		ConfigInstance.Algorithm = &SlidingWindowLog{}
 	}

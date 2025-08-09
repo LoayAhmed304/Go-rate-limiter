@@ -34,3 +34,10 @@ type Bucket struct {
 	curTokens      int
 	lastRefill     time.Time
 }
+
+type Window struct {
+	capacity        int
+	currentRequests int
+	windowSize      time.Duration
+	windowStart     time.Time
+}
