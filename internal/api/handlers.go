@@ -8,12 +8,12 @@ import (
 )
 
 func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
-	clientIP := r.RemoteAddr
+	key := r.Header.Get("X-Rate-Limit-Key")
 
-	if clientIP == "" {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 
-		_, err := w.Write([]byte("Client IP not found"))
+		_, err := w.Write([]byte("Client key not found"))
 		if err != nil {
 			logger.LogError("Failed to write response: " + err.Error())
 		}
@@ -21,9 +21,12 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	route := r.URL.Path
+	route := r.Header.Get("X-Original-Path")
+	if route == "" {
+		route = r.URL.Path
+	}
 
-	valid, timeLeft := algorithms.ConfigInstance.Algorithm.AllowRequest(clientIP, route)
+	valid, timeLeft := algorithms.ConfigInstance.Algorithm.AllowRequest(key, route)
 
 	if valid {
 		w.WriteHeader(http.StatusOK)
@@ -33,9 +36,10 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 			logger.LogError("Failed to write response: " + err.Error())
 		}
 	} else {
+		w.Header().Add("Retry-After", timeLeft.String())
 		w.WriteHeader(http.StatusTooManyRequests)
 
-		_, err := w.Write([]byte("Too many requests. Try again in " + timeLeft.String()))
+		_, err := w.Write([]byte("Too many requests. Try again later."))
 		if err != nil {
 			logger.LogError("Failed to write response: " + err.Error())
 		}
