@@ -8,23 +8,8 @@ import (
 )
 
 func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
-	key := r.Header.Get("X-Rate-Limit-Key")
 
-	if key == "" {
-		w.WriteHeader(http.StatusBadRequest)
-
-		_, err := w.Write([]byte("Client key not found"))
-		if err != nil {
-			logger.LogError("Failed to write response: " + err.Error())
-		}
-
-		return
-	}
-
-	route := r.Header.Get("X-Original-Path")
-	if route == "" {
-		route = r.URL.Path
-	}
+	key, route := r.Header.Get("X-Rate-Limit-Key"), r.Header.Get("X-Original-Path")
 
 	valid, timeLeft := algorithms.ConfigInstance.Algorithm.AllowRequest(key, route)
 
@@ -44,5 +29,27 @@ func HandleRateLimit(w http.ResponseWriter, r *http.Request) {
 			logger.LogError("Failed to write response: " + err.Error())
 		}
 	}
+
+}
+
+func ValidateHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if key := r.Header.Get("X-Rate-Limit-Key"); key == "" {
+			w.WriteHeader(http.StatusBadRequest)
+
+			_, err := w.Write([]byte("Client key not found"))
+			if err != nil {
+				logger.LogError("Failed to write response: " + err.Error())
+				return
+			}
+		}
+
+		if route := r.Header.Get("X-Original-Path"); route == "" {
+			r.Header.Set("X-Original-Path", r.URL.Path)
+		}
+
+		next.ServeHTTP(w, r)
+	})
 
 }

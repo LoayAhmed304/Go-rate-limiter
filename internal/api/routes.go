@@ -2,10 +2,10 @@ package api
 
 import "net/http"
 
-func SetUpRoutes() *http.ServeMux {
+func SetUpRoutes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", HandleRateLimit)
 
-	return mux
+	return ValidateHeaders(mux)
 }
