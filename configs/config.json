@@ -1,5 +1,5 @@
 {
-  "algorithm": "SlidingWindowLog",
+  "algorithm": "TokenBucket",
   "routes": [
     {
       "route": "/api/v1/login",

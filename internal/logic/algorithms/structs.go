@@ -8,9 +8,8 @@ type Algorithm interface {
 }
 
 type RouteConfig struct {
-	Limit      int                    `json:"limit"`
-	Interval   time.Duration          `json:"interval"`
-	ClientLogs map[string][]time.Time // map to hold client logs for each route
+	Limit    int           `json:"limit"`
+	Interval time.Duration `json:"interval"`
 }
 
 type Config struct {
@@ -27,4 +26,11 @@ type rawRouteConfig struct {
 	Route    string `json:"route"`
 	Limit    int    `json:"limit"`
 	Interval string `json:"interval"`
+}
+
+type Bucket struct {
+	refillInterval time.Duration
+	capacity       int
+	curTokens      int
+	lastRefill     time.Time
 }
