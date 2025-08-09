@@ -14,25 +14,19 @@ type SlidingWindowLog struct {
 // AllowRequest determines whether a request may be allowed for a client,
 // based on the Sliding Window Log algorithm.
 //
-// It takes a slice of timestamps representing the previous requests from the client,
+// It takes a client key and initiates/gets a slice of timestamps representing the previous requests from the client,
 // and returns whether the current request is allowed.
-// If not allowed, it alos returns the time remaining until the next allowed request.
-func (swl *SlidingWindowLog) AllowRequest(clientIP, route string) (bool, time.Duration) {
+//
+// If not allowed, it will also return the time remaining until the next allowed request.
+func (swl *SlidingWindowLog) AllowRequest(clientKey, route string) (bool, time.Duration) {
 	// route is not assigned in configs, so we assume it is whitelisted
 	if (*swl.ClientsLogs)[route] == nil {
 		return true, 0
 	}
 
-	windowSize = ConfigInstance.RoutesConfigs[route].Interval
-	maxRequests = ConfigInstance.RoutesConfigs[route].Limit
+	swl.setupLogs(clientKey, route)
 
-	_, exists := (*swl.ClientsLogs)[route][clientIP]
-	if !exists {
-		s := make([]time.Time, 0, maxRequests)
-		(*swl.ClientsLogs)[route][clientIP] = &s
-	}
-
-	clientLogs := (*swl.ClientsLogs)[route][clientIP]
+	clientLogs := (*swl.ClientsLogs)[route][clientKey]
 
 	if curRequests := len(*clientLogs); curRequests < maxRequests {
 		*clientLogs = append(*clientLogs, time.Now())
@@ -62,6 +56,21 @@ func (swl *SlidingWindowLog) Init(routes []string) {
 	}
 
 	swl.ClientsLogs = &s
+}
+
+// setupLogs is a private function used as a helper function for the AllowRequest
+// in SlidingWindowLog algorithm.
+//
+// It initializes or gets the client's logs for the given route.
+func (swl *SlidingWindowLog) setupLogs(clientKey, route string) {
+	windowSize = ConfigInstance.RoutesConfigs[route].Interval
+	maxRequests = ConfigInstance.RoutesConfigs[route].Limit
+
+	_, exists := (*swl.ClientsLogs)[route][clientKey]
+	if !exists {
+		s := make([]time.Time, 0, maxRequests)
+		(*swl.ClientsLogs)[route][clientKey] = &s
+	}
 }
 
 // clearLogs is a private function used as a helper function for the AllowRequest
