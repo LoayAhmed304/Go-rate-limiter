@@ -1,4 +1,4 @@
-# GO Rate Limiter: A Customizable, Standalone Rate Limiting  Service
+# Go Rate Limiter: A Customizable, Standalone Rate Limiting  Service
 A fully customizable Rate Limiting service written in Go. With a simple `JSON` configuration file, you can define per-route rate limits, choose the algorithm, and set the request interval, all without modifying any code. 
 
 Perfect for education, testing, or production use, this project lets you experiment with different rate limiting algorithms, add logging to measure performance, and choose the right strategy for each endpoint on your own. Being written in Go means it's secure, efficient, and highly concurrent, making it reliable to use for preventing outages and abuse.
@@ -9,11 +9,14 @@ Perfect for education, testing, or production use, this project lets you experim
 	- [Rate Limiting Algorithms Variety](#rate-limiting-algorithms-variety)
 	- [Fast Processing Time](#fast-processing-time)
 2. [Rate Limiting Algorithms](#rate-limiting-algorithms)
-3. [How to Use](#how-to-use)
+3. [Configuration](#configuration)
+4. [Installation](#installation)
+5. [How to Use](#how-to-use)
 	- [Why standalone?](#why-standalone)
 	- [Usage Steps](#usage-steps)
-4. [Final Node.js Server Test](#final-nodejs-server-test)
-5. [Extra Words](#extra-words)
+6. [Final Node.js Server Test](#final-nodejs-server-test)
+7. [Contributing](#contributing)
+8. [Extra Words](#extra-words)
 
 
 # Features
@@ -25,12 +28,12 @@ You can choose what client key to rate-limit based on, by setting the request he
 ### Rate Limiting Algorithms Variety
 Many libraries only offer one default algorithm for all routes, but this approach isn’t always optimal. And according to what I've learned, which is **rarely** optimal. Each algorithm has strengths and weaknesses, performs best on specific type of routes while underperforming on others.
 ### Fast Processing Time
-I have utilized `goroutines` and production-ready code, in addition to the nature of GO, that resulted in this service to be fast and processes requests in no time. Benchmarks show an average overhead of just 0-1 ms per request, with rare peaks of 2-3 ms.
+I have utilized `goroutines` and production-ready code, in addition to Go's concurrency model, that resulted in this service to be fast and processes requests in no time. Benchmarks show an average overhead of just 0-1 ms per request, with rare peaks of 2-3 ms.
 # Rate Limiting Algorithms
 Here's a list of used algorithms that you can use by inserting its corresponding name in your `json` configurations file. You can check [this video](https://youtu.be/mQCJJqUfn9Y) to learn more about each algorithm, their pros and cons, and their best use cases.
 - `FixedWindowCounter`: The most straight-forward algorithm that is used by default in `express-rate-limiting` library in `node.js`.
 - `SlidingWindowLog`: Another variation of utilizing windows in rate limiting. 
-- `SlidingWindowCounter`: A very interesting approach that takes the best of both previous windows variations, it's less intuitive but it is so much worth investigating into.
+- `SlidingWindowCounter`: A very interesting approach that takes the best of both previous windows variations, it's less intuitive but it is so much worth investigating.
 - `TokenBucket`: An algorithm that doesn't utilize windows, yet focuses on a fixed rate per unit time, to eventually achieve the desired limiting interval.
 Many other algorithms exist, but these are the most widely used based on my research.
 # Configuration
@@ -57,7 +60,8 @@ The config file can be placed anywhere, and you can have multiple config files f
 # Installation
 No need to clone the repo, the image is pushed to dockerhub.
 1. Have docker installed
-2. Create this `docker-compose.yml` file anywhere
+2. Create `config.json` or let the image use the default one. (see [Configuration](#configuration))
+3. Create this `docker-compose.yml` file anywhere
 ```yaml
 # Example docker-compose.yml
 services:
@@ -70,6 +74,10 @@ rate-limiter:
   command: ["./rate-limiter", "-f=./configs/config.json", "-p=:9240"]
 ```
 > Change your config file directory and update it in the CLI arguments
+
+4. Run `docker compose up -d`
+5. Call the service from your backend
+
 
 That's it, congratulations, you have it running now!
 # How to Use
@@ -141,7 +149,7 @@ app.get("/api/v1/posts", handlePosts);
 ```
 
 
-# Final Node.js Server Test
+## Final Node.js Server Test
 ```js
 // Example index.js
 const express = require("express");
@@ -196,7 +204,11 @@ app.get("/api/v1/login", rateLimit, (_, res) => {
 
 app.listen(3000, () => console.log("Server is running on port 3000"));
 ```
-# Extra Words
+
+## Contributing
+Pull requests are welcome. Please open an issue to discuss major changes first.
+
+## Extra Words
  I built this project to deepen my Go skills and create a robust, production-ready service. I’m proud of the result and welcome feedback or contributions. I’ve also read extensively about writing idiomatic Go code to ensure the architecture and implementation follow best Go practices.
 
 **Thank you.**
