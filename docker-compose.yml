@@ -1,0 +1,10 @@
+services:
+  rate-limiter:
+    build:
+      context: .
+      dockerfile: ./deploy/docker/Dockerfile
+    ports:
+      - "9240:9240"
+    volumes:
+      - ./configs:/home/app/configs
+    command: ["./rate-limiter", "-f=./configs/config.json", "-p=:9240"]
