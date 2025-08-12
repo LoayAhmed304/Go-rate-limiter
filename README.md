@@ -65,13 +65,13 @@ No need to clone the repo, the image is pushed to dockerhub.
 ```yaml
 # Example docker-compose.yml
 services:
-rate-limiter:
-  image: loayahmed/go-rate-limiter:latest
-  ports:
-    - "4000:9240"
-  volumes:
-    - ./configs:/home/app/configs
-  command: ["./rate-limiter", "-f=./configs/config.json", "-p=:9240"]
+	rate-limiter:
+	  image: loayahmed/go-rate-limiter:latest
+	  ports:
+	    - "4000:9240"
+	  volumes:
+	    - ./configs:/home/app/configs
+	  command: ["./rate-limiter", "-f=./configs/config.json", "-p=:9240"]
 ```
 > Change your config file directory and update it in the CLI arguments
 
